@@ -3,15 +3,53 @@ import re
 import heapq
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
-# from allennlp.predictors.predictor import Predictor
-# import allennlp_models.coref
-#
-#
+from transformers import AutoTokenizer
+import coreferee
+import spacy
+from allennlp.predictors.predictor import Predictor
+import allennlp_models.coref
+
+# import os
+# os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
 # ###COREF RESOLUTION STUFF NEW TOO!!!
 #
-# coref_predictor = Predictor.from_path(
-#     "https://storage.googleapis.com/allennlp-public-models/coref-spanbert-large-2021.03.10.tar.gz"
-# )
+# nlp = spacy.load("en_core_web_md")
+# nlp.add_pipe("coreferee")
+
+# AutoTokenizer.from_pretrained("SpanBERT/spanbert-large-cased")
+
+coref_predictor = Predictor.from_path("models/coref-spanbert-local")
+
+def corefresolution(text):
+    prediction = coref_predictor.predict(document=text)
+    clusters = prediction['clusters']
+    tokens = prediction['document']
+
+    resolved_tokens = tokens[:]
+    for cluster in clusters:
+        main_mention = cluster[0]
+        for mention in cluster[1:]:
+            start, end = mention
+            resolved_tokens[start] = tokens[main_mention[0]]
+            for i in range(start+1, end+1):
+                resolved_tokens[i] = ''
+
+    resolved_text = ' '.join([token for token in resolved_tokens if token])
+    return resolved_text
+
+
+# def corefresolution(text):
+#     doc = nlp(text)
+#     resolved = text
+#     if doc._.has_coref:
+#         for chain in doc._.coref_chains:
+#             main = chain.main.text
+#             for mention in list(chain)[1:]:  # skip the main mention
+#                 pattern = r'\b' + re.escape(mention.text) + r'\b'
+#                 resolved = re.sub(pattern, main, resolved)
+#     return resolved
+
 
 
 ####------------
@@ -150,6 +188,9 @@ def getsummary(sentence_scores, orig_sentences, top_k=9):
 
 if __name__ == "__main__": #main method
     paragraph = input("Enter a paragraph or claim: ") #user input instead of json
+
+    resolved = corefresolution(paragraph)
+    cleaned = clean(resolved)
 
     #new stuff >>>>
     preamble = fetchpreamble(paragraph)

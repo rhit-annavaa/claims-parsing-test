@@ -1,0 +1,142 @@
+{
+    "dataset_reader": {
+        "type": "coref",
+        "max_sentences": 110,
+        "max_span_width": 30,
+        "token_indexers": {
+            "tokens": {
+                "type": "pretrained_transformer_mismatched",
+                "max_length": 512,
+                "model_name": "SpanBERT/spanbert-large-cased"
+            }
+        }
+    },
+    "model": {
+        "type": "coref",
+        "antecedent_feedforward": {
+            "activations": "relu",
+            "dropout": 0.3,
+            "hidden_dims": 1500,
+            "input_dim": 9296,
+            "num_layers": 2
+        },
+        "coarse_to_fine": true,
+        "context_layer": {
+            "type": "pass_through",
+            "input_dim": 1024
+        },
+        "feature_size": 20,
+        "inference_order": 2,
+        "initializer": {
+            "regexes": [
+                [
+                    ".*_span_updating_gated_sum.*weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    ".*linear_layers.*weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    ".*scorer.*weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    "_distance_embedding.weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    "_span_width_embedding.weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    "_context_layer._module.weight_ih.*",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    "_context_layer._module.weight_hh.*",
+                    {
+                        "type": "orthogonal"
+                    }
+                ]
+            ]
+        },
+        "max_antecedents": 50,
+        "max_span_width": 30,
+        "mention_feedforward": {
+            "activations": "relu",
+            "dropout": 0.3,
+            "hidden_dims": 1500,
+            "input_dim": 3092,
+            "num_layers": 2
+        },
+        "spans_per_word": 0.4,
+        "text_field_embedder": {
+            "token_embedders": {
+                "tokens": {
+                    "type": "pretrained_transformer_mismatched",
+                    "max_length": 512,
+                    "model_name": "SpanBERT/spanbert-large-cased"
+                }
+            }
+        }
+    },
+    "train_data_path": "/home/dirkg/tank/data/conll12/train.english.v4_gold_conll",
+    "validation_data_path": "/home/dirkg/tank/data/conll12/dev.english.v4_gold_conll",
+    "test_data_path": "/home/dirkg/tank/data/conll12/test.english.v4_gold_conll",
+    "trainer": {
+        "learning_rate_scheduler": {
+            "type": "slanted_triangular",
+            "cut_frac": 0.06
+        },
+        "num_epochs": 40,
+        "optimizer": {
+            "type": "huggingface_adamw",
+            "lr": 0.0003,
+            "parameter_groups": [
+                [
+                    [
+                        ".*transformer.*"
+                    ],
+                    {
+                        "lr": 1e-05
+                    }
+                ]
+            ]
+        },
+        "patience": 10,
+        "validation_metric": "+coref_f1"
+    },
+    "data_loader": {
+        "batch_sampler": {
+            "type": "bucket",
+            "batch_size": 1,
+            "sorting_keys": [
+                "text"
+            ]
+        }
+    },
+    "validation_dataset_reader": {
+        "type": "coref",
+        "max_span_width": 30,
+        "token_indexers": {
+            "tokens": {
+                "type": "pretrained_transformer_mismatched",
+                "max_length": 512,
+                "model_name": "SpanBERT/spanbert-large-cased"
+            }
+        }
+    }
+}
