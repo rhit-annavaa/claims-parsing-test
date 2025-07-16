@@ -19,3 +19,5 @@ spacysimilarity.py: Uses a SpaCy model to come up with a similarity score (I thi
 test4.py: Work in progress
 
 youtubetest.py: Uses a pretrained BART model to summarize text. 
+
+Edited: 7/16/25
