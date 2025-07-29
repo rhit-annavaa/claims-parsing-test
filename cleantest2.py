@@ -33,7 +33,7 @@ def extract_claim_elements(text):
                     buf += " " + tok
                     subparts.append(buf)
                     buf = ""
-                    in_wherein = False
+                    in_wherein = False #append the buf then leave the wherein clause
                 else:
                     buf = tok
         if buf:
